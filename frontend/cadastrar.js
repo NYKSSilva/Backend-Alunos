@@ -42,4 +42,12 @@ async function salvar(e) {
     carregarTabela()
 }
 
-formAluno.addEventListener("submit",salvar)
+
+formAluno.addEventListener("submit", salvar);
+    const btnLimpar = document.getElementById("Limpar");
+    if (btnLimpar) {
+        btnLimpar.addEventListener("click", () => {
+            formAluno.reset();
+        });
+
+    }

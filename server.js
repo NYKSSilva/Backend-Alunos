@@ -82,42 +82,46 @@ app.get("/alunos/:id", async (req, res) => {
     }
 })
 
-app.put("/alunos:id", async (req, res) =>{
-    const id = parseInt(req.params.id)
-    const {nome, 
-           cpf, 
-           cep=null, 
-           uf=null,
-           rua=null, 
-           complemento=null
-    } = req.body
+app.put("/alunos/:id", async (req, res) =>{
+    const id= req.params.id;
+    const { nome, cpf, cep = null, uf = null, rua = null, numero = null, complemento = null } = req.body;
+     if(!nome || !cpf) return res.status(400).json({msg : "Nome e CPF são obrigatorio"})
+       
+     try{
+            const sql = `
+            UPDATE alunos SET nome=?, cpf=?, cep=?, uf=?, rua=?, numero=?, complemento=?
+            WHERE id =?
+`
+        const parametro = [nome, cpf, cep, uf, rua, numero, complemento, id]
+        const [resultado] = await conexao.execute(sql,parametro)
 
-    if(!nome|| !cpf) return res.status(400).json({msg: "Nome e CPF são obrogatorios"})
-        const sql= `
-        UPDATE alunos
-        SET nome = ?,
-        cpf =?,
-        cep =?,
-        uf=?,
-        rua =?,
-        numero=?,
-        complemento =?
-        WHERE id = ?
-    `;
-       const parametro = [nome, cpf, cep, uf, rua, numero, complemento]
+       if (resultado.affectedRows === 0) {
+            return res.status(404).json({ msg: "Aluno não encontrado" });
+        }
 
-      try {
-        const [resultado] = await conexao.execute(sql, parametro);
+       const [retorno] = await conexao.query(`SELECT * FROM alunos WHERE id =  ${id}`)
+       res.status(200).json(retorno)
+
+    }catch(err){
+        console.log(err);
+        res.status(500).json({erro: "Erro ao buscar alunos"})
+    }
+})
+
+app.delete("/alunos/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        const [resultado] = await conexao.execute("DELETE FROM alunos WHERE id = ?", [id]);
+
         if (resultado.affectedRows === 0) {
             return res.status(404).json({ msg: "Aluno não encontrado" });
         }
-        const [alunoAtualizado] = await conexao.query("SELECT * FROM alunos WHERE id = ?", [id]);
-        res.status(200).json(alunoAtualizado[0]);
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ erro: "Erro ao atualizar aluno" });
+
+        res.status(200).json({ msg: "Aluno excluído com sucesso!" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao excluir aluno" });
     }
 });
-
 
 app.listen(porta, () => console.log(`Servidor rodando http://localhost:${porta}/alunos`));

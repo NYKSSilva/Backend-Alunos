@@ -24,7 +24,10 @@ async function carregarTabela() {
                 <button> 
                  <a href="editar.html?id=${a.id}">Editar</a> 
                 </button>
-                 <button>Excluir</button></td>
+                 <button onclick="excluirAluno(${a.id})">Excluir</button>
+                 
+                 </tr>
+                 
             </tr>`
         ).join("");
         // }, 2000) // 5 segundos
@@ -32,6 +35,28 @@ async function carregarTabela() {
         console.error(error.message)
     }
 
+}
+
+async function excluirAluno(id) {
+    if (!confirm("Tem certeza que deseja excluir este aluno?")) {
+        return;
+    }
+
+    try {
+        const resposta = await fetch(`http://localhost:3000/alunos/${id}`, {
+            method: "DELETE"
+        });
+
+        if (resposta.ok) {
+            alert("Aluno excluído com sucesso!");
+            carregarTabela();
+        } else {
+            alert("Erro ao excluir aluno!");
+        }
+    } catch (error) {
+        console.error("Erro:", error);
+        alert("Erro de conexão com servidor.");
+    }
 }
 
 carregarTabela();
